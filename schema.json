@@ -9,9 +9,28 @@
     "hasChildren": true,
     "settings": [
       {
+        "type": "boolean",
+        "key": "importToTable",
+        "label": "Save results to table",
+        "defaultValue": true
+      },
+      {
         "type": "table",
         "key": "table",
-        "label": "Table"
+        "label": "Table",
+        "dependsOn": {
+          "setting": "importToTable",
+          "value": true
+        }
+      },
+      {
+        "type": "text",
+        "key": "additionalData",
+        "label": "Data to add to each row (JSON)",
+        "dependsOn": {
+          "setting": "importToTable",
+          "value": true
+        }
       },
       {
         "type": "event",

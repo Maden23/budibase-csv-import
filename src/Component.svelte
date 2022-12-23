@@ -6,8 +6,11 @@
   import { getContext } from "svelte";
   import Dropzone from "svelte-file-dropzone";
   import Papa from "papaparse";
+  import { Table } from "@budibase/bbui";
 
+  export let importToTable;
   export let table;
+  export let additionalData="";
   export let importText="Import";
   export let resetText="Reset";
   export let copyErrorText = "Copy errors"
@@ -19,9 +22,11 @@
 
   let file = {};
   let data = [];
+  let schema = null;
   let parseErrors = [];
   let importErrors = [];
   let isParsed = false;
+  let isReadyForPreview = false;
   let isImporting = false;
   let isImported = false;
   let importedCount = 0;
@@ -50,17 +55,32 @@
       header: true,
       complete: (result) => {
         data = result.data;
-        isParsed = true;
         parseErrors = result.errors;
+        isParsed = true;
+        if (additionalData !== "") {
+          addUserData()
+        }
+        preparePreview();
       }
     });
+  }
+
+  function addUserData() {
+    const userData = JSON.parse(additionalData);
+    data = data.map( obj => ({...obj, ...userData}) );
+  }
+
+  async function preparePreview() {
+    let tableDefinition = await API.fetchTableDefinition(table.tableId);
+    schema = tableDefinition.schema
+    isReadyForPreview = true;
   }
 
   async function importData() {
     isImporting = true;
     for (let row of data) {
       // do not import in builder mode
-      if (!$builderStore.inBuilder) {
+      if (importToTable && !$builderStore.inBuilder) {
         try {
           importedCount++;
           await API.saveRow({
@@ -86,6 +106,7 @@
     parseErrors = [];
     importErrors = [];
     isParsed = false;
+    isReadyForPreview = false;
     isImported = false;
     isImporting = false;
     importedCount = 0;
@@ -96,7 +117,6 @@
   }
 
 </script>
-
 <div use:styleable={$component.styles} >
   {#if !isParsed}
     <Dropzone 
@@ -112,18 +132,21 @@
         {#if isParsed && !isImported}
           <p>{file.name}&nbsp;-&nbsp;{data.length}&nbsp;rows found</p>
         {/if}
+        {#if isReadyForPreview}
+          <Table {data} {schema} allowEditRows={false} allowEditColumns={false} allowSelectRows={false}></Table>
+        {/if}
         {#if isImporting}
           <p>{importedCount}/{data.length}</p>
         {/if}
         {#if isImported}
           {#if importErrors.length === 0}
-            <p>Import complete!</p>
-          {:else}
+          <p>Import complete!</p>
+            {:else}
             <div>
               {`${data.length - importErrors.length} Imported,  ${importErrors.length} Errored`}
             </div>
+            {/if}
           {/if}
-        {/if}
       </div>
     {/if}
   </Provider>

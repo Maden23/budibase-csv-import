@@ -1,5 +1,6 @@
 {
   "name": "csv-import",
+  "type": "module",
   "version": "1.0.0",
   "description": "Allows your end users to import a CSV and post the results to a table or custom query",
   "license": "MIT",
@@ -10,6 +11,7 @@
     "watch": "rollup -cw"
   },
   "dependencies": {
+    "@budibase/bbui": "^2.2.9",
     "@crownframework/svelte-error-boundary": "^1.0.3",
     "papaparse": "^5.3.2",
     "svelte": "^3.49.0",
