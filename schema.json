@@ -57,6 +57,12 @@
       },
       {
         "type": "text",
+        "key": "exportErroredRowsText",
+        "label": "Export errored rows text",
+        "defaultValue": "Export errored rows"
+      },
+      {
+        "type": "text",
         "key": "dragzoneText",
         "label": "Dragzone text",
         "defaultValue":"Drag 'n' drop some files here, or click to select files"

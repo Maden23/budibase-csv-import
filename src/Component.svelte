@@ -12,6 +12,7 @@
   export let table;
   export let additionalData="";
   export let importText="Import";
+  export let exportErroredRowsText="Export errored rows"
   export let resetText="Reset";
   export let copyErrorText = "Copy errors"
   export let onImport= () => {};
@@ -53,6 +54,7 @@
     file = acceptedFiles[0];
     Papa.parse(file, {
       header: true,
+      skipEmptyLines: true,
       complete: (result) => {
         data = result.data;
         parseErrors = result.errors;
@@ -116,6 +118,32 @@
     navigator.clipboard.writeText(JSON.stringify(importErrors));
   }
 
+  function exportErroredRows() {
+    var erroredRowNumbers = new Set();
+    parseErrors.map(err => erroredRowNumbers.add(err.row));
+    importErrors.map(err => erroredRowNumbers.add(err.rowNumber - 1));
+    
+    var erroredRows = []
+    erroredRowNumbers.forEach(i => erroredRows.push(data[i]))
+
+    var csv = Papa.unparse(erroredRows);
+    var csvData = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    var csvURL =  null;
+    if (navigator.msSaveBlob)
+    {
+        csvURL = navigator.msSaveBlob(csvData, 'errors.csv');
+    }
+    else
+    {
+        csvURL = window.URL.createObjectURL(csvData);
+    }
+
+    var tempLink = document.createElement('a');
+    tempLink.href = csvURL;
+    tempLink.setAttribute('download', 'errors.csv');
+    tempLink.click();
+  }
+
 </script>
 <div use:styleable={$component.styles} >
   {#if !isParsed}
@@ -165,8 +193,13 @@
         on:click={copyErrors}>
           {copyErrorText}
       </button>
+      <button 
+        class="spectrum-Button spectrum-Button--fill spectrum-Button--primary spectrum-Button--sizeS"
+        on:click={exportErroredRows}>
+          {exportErroredRowsText}
+      </button>
     {/if}
-    {#if isParsed && hasRows && !isImported}
+    {#if isParsed && hasRows && !isImported && !isImporting}
       <button
         on:click={importData}
         class="spectrum-Button spectrum-Button--fill spectrum-Button--primary spectrum-Button--sizeS">
