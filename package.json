@@ -1,7 +1,7 @@
 {
   "name": "csv-import",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Allows your end users to import a CSV and post the results to a table or custom query",
   "license": "MIT",
   "svelte": "index.js",
